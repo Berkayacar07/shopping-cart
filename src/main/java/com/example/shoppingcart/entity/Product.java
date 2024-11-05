@@ -1,6 +1,6 @@
 package com.example.shoppingcart.entity;
 
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
 
@@ -11,9 +11,17 @@ import lombok.experimental.SuperBuilder;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Product extends BaseEntity {
+    
     private String name;
     private String description;
     private double price;
     private int stock;
+    
+    @ManyToOne
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
+    
+    @ManyToOne
+    @JoinColumn(name = "order_id")
+    private Order order;
 }
-

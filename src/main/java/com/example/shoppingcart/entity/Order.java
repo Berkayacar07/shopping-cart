@@ -12,13 +12,14 @@ import java.util.List;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
+@Table(name = "orders")
 public class Order extends BaseEntity {
+    
     @ManyToOne
     private Customer customer;
     
-    @OneToMany
-    private List<OrderItem> items;
+    @OneToMany(mappedBy = "order")
+    private List<Product> products;
     
     private double totalPrice;
 }
-

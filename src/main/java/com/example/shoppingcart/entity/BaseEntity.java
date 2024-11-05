@@ -23,12 +23,6 @@ public abstract class BaseEntity {
     @Column(nullable = false)
     private LocalDateTime updateDate;
     
-    @Column(nullable = false, updatable = false)
-    private String createUser;
-    
-    @Column(nullable = false)
-    private String updateUser;
-    
     @PrePersist
     public void onCreate() {
         createDate = LocalDateTime.now();
