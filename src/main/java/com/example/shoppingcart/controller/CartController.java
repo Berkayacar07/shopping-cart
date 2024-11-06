@@ -1,14 +1,12 @@
 package com.example.shoppingcart.controller;
 
-import com.example.shoppingcart.entity.Cart;
-import com.example.shoppingcart.entity.Customer;
-import com.example.shoppingcart.entity.Product;
+import com.example.shoppingcart.entity.*;
+import com.example.shoppingcart.response.CartResponseDTO;
 import com.example.shoppingcart.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/carts")
@@ -18,19 +16,19 @@ public class CartController {
     private CartService cartService;
     
     @GetMapping("/{id}")
-    public Cart getCartById(@PathVariable String id) {
+    public CartResponseDTO getCartById(@PathVariable String id) {
         return cartService.getCartById(id).orElseThrow(() -> new IllegalArgumentException("Cart not found"));
     }
     
     @GetMapping("/customer/{customerId}")
-    public Cart getCartByCustomer(@PathVariable String customerId) {
+    public CartResponseDTO getCartByCustomer(@PathVariable String customerId) {
         Customer customer = new Customer();
         customer.setId(customerId);
         return cartService.getCartByCustomer(customer);
     }
     
     @PutMapping("/{id}")
-    public Cart updateCart(@PathVariable String id, @RequestBody List<Product> products) {
+    public CartResponseDTO updateCart(@PathVariable String id, @RequestBody List<Product> products) {
         return cartService.updateCart(id, products);
     }
     
@@ -40,12 +38,12 @@ public class CartController {
     }
     
     @PostMapping("/{cartId}/addProduct")
-    public Cart addProductToCart(@PathVariable String cartId, @RequestBody Product product) {
+    public CartResponseDTO addProductToCart(@PathVariable String cartId, @RequestBody Product product) {
         return cartService.addProductToCart(cartId, product);
     }
     
     @DeleteMapping("/{cartId}/removeProduct")
-    public Cart removeProductFromCart(@PathVariable String cartId, @RequestBody Product product) {
+    public CartResponseDTO removeProductFromCart(@PathVariable String cartId, @RequestBody Product product) {
         return cartService.removeProductFromCart(cartId, product);
     }
 }

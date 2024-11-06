@@ -1,5 +1,7 @@
 package com.example.shoppingcart.entity;
 
+import java.util.*;
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -17,11 +19,10 @@ public class Product extends BaseEntity {
     private double price;
     private int stock;
     
-    @ManyToOne
-    @JoinColumn(name = "cart_id")
-    private Cart cart;
+    @ManyToMany(mappedBy = "products")
+    @JsonIgnore
+    private List<Cart> carts = new ArrayList<>();
     
-    @ManyToOne
-    @JoinColumn(name = "order_id")
-    private Order order;
+    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems = new ArrayList<>();
 }
