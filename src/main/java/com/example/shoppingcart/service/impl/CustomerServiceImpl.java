@@ -1,6 +1,6 @@
 package com.example.shoppingcart.service.impl;
 
-import com.example.shoppingcart.entity.Customer;
+import com.example.shoppingcart.entity.*;
 import com.example.shoppingcart.repository.CustomerRepository;
 import com.example.shoppingcart.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +17,13 @@ public class CustomerServiceImpl implements CustomerService {
     
     @Override
     public Customer createCustomer(Customer customer) {
+        Cart cart = Cart.builder()
+                .customer(customer)
+                .totalPrice(0.0)
+                .build();
+        
+        customer.setCarts(cart);
+        
         return customerRepository.save(customer);
     }
     
@@ -39,5 +46,10 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public void deleteCustomer(String id) {
         customerRepository.deleteById(id);
+    }
+    
+    @Override
+    public Customer findByEmail(String email) {
+        return customerRepository.findByEmail(email);
     }
 }

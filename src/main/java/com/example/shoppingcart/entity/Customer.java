@@ -1,10 +1,13 @@
 package com.example.shoppingcart.entity;
 
+import com.fasterxml.jackson.annotation.*;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.List;
+import java.util.*;
 
 @Getter
 @Setter
@@ -12,14 +15,62 @@ import java.util.List;
 @SuperBuilder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Customer extends BaseEntity {
+public class Customer extends BaseEntity implements UserDetails {
     
+    @Column(nullable = false)
     private String name;
+    
+    @Column(nullable = false, unique = true)
     private String email;
     
-    @OneToOne(mappedBy = "customer", cascade = CascadeType.ALL)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
+    
+    @OneToOne(mappedBy = "customer", cascade = CascadeType.PERSIST)
+    @JsonIgnore
     private Cart carts;
     
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
+    @JsonIgnore
     private List<Order> orders;
+    
+    @Override
+    @JsonIgnore
+    public Collection<? extends GrantedAuthority> getAuthorities() {
+        return Collections.emptyList();
+    }
+    
+    @Override
+    @JsonIgnore
+    public String getUsername() {
+        return email;
+    }
+    
+    @Override
+    public String getPassword() {
+        return password;
+    }
+    
+    @Override
+    @JsonIgnore
+    public boolean isAccountNonExpired() {
+        return true;
+    }
+    
+    @Override
+    @JsonIgnore
+    public boolean isAccountNonLocked() {
+        return true;
+    }
+    
+    @Override
+    @JsonIgnore
+    public boolean isCredentialsNonExpired() {
+        return true;
+    }
+    
+    @Override
+    public boolean isEnabled() {
+        return true;
+    }
 }

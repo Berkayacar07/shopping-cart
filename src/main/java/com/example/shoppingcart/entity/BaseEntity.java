@@ -24,12 +24,13 @@ public abstract class BaseEntity {
     private LocalDateTime updateDate;
     
     @PrePersist
-    public void onCreate() {
+    public void prePersist() {
         createDate = LocalDateTime.now();
+        updateDate = LocalDateTime.now();
     }
     
     @PreUpdate
-    public void onUpdate() {
+    public void preUpdate() {
         updateDate = LocalDateTime.now();
     }
 }

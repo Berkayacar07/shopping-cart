@@ -15,11 +15,17 @@ import java.util.List;
 @Table(name = "orders")
 public class Order extends BaseEntity {
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     private Customer customer;
     
-    @OneToMany(mappedBy = "order")
-    private List<Product> products;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItem> orderItems;
     
     private double totalPrice;
+    
+    public void calculateTotalPrice() {
+        this.totalPrice = orderItems.stream()
+                .mapToDouble(item -> item.getPrice() * item.getQuantity())
+                .sum();
+    }
 }

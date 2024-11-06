@@ -10,4 +10,5 @@ public interface CustomerService {
     List<Customer> getAllCustomers();
     Customer updateCustomer(String id, Customer customer);
     void deleteCustomer(String id);
+    Customer findByEmail(String email);
 }
