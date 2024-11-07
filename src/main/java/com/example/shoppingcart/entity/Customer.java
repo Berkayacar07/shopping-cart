@@ -28,7 +28,7 @@ public class Customer extends BaseEntity implements UserDetails {
     
     @OneToOne(mappedBy = "customer", cascade = CascadeType.PERSIST)
     @JsonIgnore
-    private Cart carts;
+    private Cart cart;
     
     @OneToMany(mappedBy = "customer", cascade = CascadeType.PERSIST)
     @JsonIgnore

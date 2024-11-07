@@ -6,11 +6,11 @@ import java.util.List;
 
 @Getter
 @Setter
-public class CartResponseDTO {
+public class CartResponse {
     private List<CartItemDTO> cartItems;
     private double totalPrice;
     
-    public CartResponseDTO(List<CartItemDTO> cartItems, double totalPrice) {
+    public CartResponse(List<CartItemDTO> cartItems, double totalPrice) {
         this.cartItems = cartItems;
         this.totalPrice = totalPrice;
     }

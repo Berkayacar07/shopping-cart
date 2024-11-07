@@ -22,7 +22,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .totalPrice(0.0)
                 .build();
         
-        customer.setCarts(cart);
+        customer.setCart(cart);
         
         return customerRepository.save(customer);
     }

@@ -2,7 +2,7 @@ package com.example.shoppingcart.service.impl;
 
 import com.example.shoppingcart.entity.*;
 import com.example.shoppingcart.repository.*;
-import com.example.shoppingcart.response.CartResponseDTO;
+import com.example.shoppingcart.response.CartResponse;
 import com.example.shoppingcart.service.CartService;
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
@@ -23,14 +23,14 @@ public class CartServiceImpl implements CartService {
     
     // Sepet ID'sine göre sepeti getir
     @Override
-    public Optional<CartResponseDTO> getCartById(String id) {
+    public Optional<CartResponse> getCartById(String id) {
         Optional<Cart> optionalCart = cartRepository.findById(id);
         if (optionalCart.isPresent()) {
             Cart cart = optionalCart.get();
-            List<CartResponseDTO.CartItemDTO> cartItems = cart.getCartItems().stream()
-                    .map(cartItem -> new CartResponseDTO.CartItemDTO(cartItem))
+            List<CartResponse.CartItemDTO> cartItems = cart.getCartItems().stream()
+                    .map(cartItem -> new CartResponse.CartItemDTO(cartItem))
                     .collect(Collectors.toList());
-            return Optional.of(new CartResponseDTO(cartItems, cart.getTotalPrice()));
+            return Optional.of(new CartResponse(cartItems, cart.getTotalPrice()));
         } else {
             throw new IllegalArgumentException("Bu ID ile sepet bulunamadı: " + id);
         }
@@ -52,13 +52,13 @@ public class CartServiceImpl implements CartService {
     
     // Müşteriye ait sepeti getir
     @Override
-    public CartResponseDTO getCartByCustomer(Customer customer) {
+    public CartResponse getCartByCustomer(Customer customer) {
         Cart cart = cartRepository.findByCustomer(customer);
         if (cart != null) {
-            List<CartResponseDTO.CartItemDTO> cartItems = cart.getCartItems().stream()
-                    .map(cartItem -> new CartResponseDTO.CartItemDTO(cartItem))
+            List<CartResponse.CartItemDTO> cartItems = cart.getCartItems().stream()
+                    .map(cartItem -> new CartResponse.CartItemDTO(cartItem))
                     .collect(Collectors.toList());
-            return new CartResponseDTO(cartItems, cart.getTotalPrice());
+            return new CartResponse(cartItems, cart.getTotalPrice());
         } else {
             throw new IllegalArgumentException("Bu müşteri için sepet bulunamadı: " + customer.getId());
         }
@@ -67,7 +67,7 @@ public class CartServiceImpl implements CartService {
     // Sepeti güncelle
     @Override
     @Transactional
-    public CartResponseDTO updateCart(String id, List<CartItem> cartItems) {
+    public CartResponse updateCart(String id, List<CartItem> cartItems) {
         Optional<Cart> optionalCart = cartRepository.findById(id);
         if (optionalCart.isPresent()) {
             Cart cart = optionalCart.get();
@@ -88,11 +88,11 @@ public class CartServiceImpl implements CartService {
             updateTotalPrice(cart);
             cartRepository.save(cart);
             
-            List<CartResponseDTO.CartItemDTO> updatedCartItems = cart.getCartItems().stream()
-                    .map(cartItem -> new CartResponseDTO.CartItemDTO(cartItem))
+            List<CartResponse.CartItemDTO> updatedCartItems = cart.getCartItems().stream()
+                    .map(cartItem -> new CartResponse.CartItemDTO(cartItem))
                     .collect(Collectors.toList());
             
-            return new CartResponseDTO(updatedCartItems, cart.getTotalPrice());
+            return new CartResponse(updatedCartItems, cart.getTotalPrice());
         } else {
             throw new IllegalArgumentException("Bu ID ile sepet bulunamadı: " + id);
         }
@@ -100,7 +100,7 @@ public class CartServiceImpl implements CartService {
     
     // Sepete ürün ekle
     @Override
-    public CartResponseDTO addProductToCart(String cartId, CartItem cartItem) {
+    public CartResponse addProductToCart(String cartId, CartItem cartItem) {
         Optional<Cart> optionalCart = cartRepository.findById(cartId);
         
         if (optionalCart.isPresent()) {
@@ -134,11 +134,11 @@ public class CartServiceImpl implements CartService {
             updateTotalPrice(cart);
             cartRepository.save(cart);
             
-            List<CartResponseDTO.CartItemDTO> updatedCartItems = cart.getCartItems().stream()
-                    .map(cartItem1 -> new CartResponseDTO.CartItemDTO(cartItem1))
+            List<CartResponse.CartItemDTO> updatedCartItems = cart.getCartItems().stream()
+                    .map(cartItem1 -> new CartResponse.CartItemDTO(cartItem1))
                     .collect(Collectors.toList());
             
-            return new CartResponseDTO(updatedCartItems, cart.getTotalPrice());
+            return new CartResponse(updatedCartItems, cart.getTotalPrice());
         } else {
             throw new IllegalArgumentException("Bu ID ile sepet bulunamadı: " + cartId);
         }
@@ -146,7 +146,7 @@ public class CartServiceImpl implements CartService {
     
     // Sepetten ürün çıkar
     @Override
-    public CartResponseDTO removeProductFromCart(String cartId, CartItem cartItem) {
+    public CartResponse removeProductFromCart(String cartId, CartItem cartItem) {
         Optional<Cart> optionalCart = cartRepository.findById(cartId);
         if (optionalCart.isPresent()) {
             Cart cart = optionalCart.get();
@@ -162,11 +162,11 @@ public class CartServiceImpl implements CartService {
             updateTotalPrice(cart);
             cartRepository.save(cart);
             
-            List<CartResponseDTO.CartItemDTO> updatedCartItems = cart.getCartItems().stream()
-                    .map(cartItem1 -> new CartResponseDTO.CartItemDTO(cartItem1))
+            List<CartResponse.CartItemDTO> updatedCartItems = cart.getCartItems().stream()
+                    .map(cartItem1 -> new CartResponse.CartItemDTO(cartItem1))
                     .collect(Collectors.toList());
             
-            return new CartResponseDTO(updatedCartItems, cart.getTotalPrice());
+            return new CartResponse(updatedCartItems, cart.getTotalPrice());
         } else {
             throw new IllegalArgumentException("Bu ID ile sepet bulunamadı: " + cartId);
         }

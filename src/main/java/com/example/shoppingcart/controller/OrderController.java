@@ -1,6 +1,8 @@
 package com.example.shoppingcart.controller;
 
 import com.example.shoppingcart.entity.Order;
+import com.example.shoppingcart.request.OrderRequest;
+import com.example.shoppingcart.response.OrderResponse;
 import com.example.shoppingcart.service.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -15,8 +17,8 @@ public class OrderController {
     private OrderService orderService;
     
     @PostMapping
-    public Order placeOrder(@RequestBody Order order) {
-        return orderService.placeOrder(order);
+    public OrderResponse placeOrder(@RequestBody OrderRequest orderRequest) {
+        return orderService.placeOrder(orderRequest.getCustomerId());
     }
     
     @GetMapping("/{id}")

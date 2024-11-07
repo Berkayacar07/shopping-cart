@@ -24,5 +24,6 @@ public class Product extends BaseEntity {
     private List<CartItem> cartItems = new ArrayList<>();
     
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
     private List<OrderItem> orderItems = new ArrayList<>();
 }

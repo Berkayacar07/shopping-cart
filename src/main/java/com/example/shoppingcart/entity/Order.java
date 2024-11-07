@@ -19,14 +19,14 @@ public class Order extends BaseEntity {
     private Customer customer;
     
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
     private List<OrderItem> orderItems = new ArrayList<>();
     
     private double totalPrice;
     
-    public void calculateTotalPrice() {
-        this.totalPrice = orderItems.stream()
-                .mapToDouble(item -> item.getPrice() * item.getQuantity())
-                .sum();
+    public void addOrderItem(OrderItem orderItem) {
+        this.orderItems.add(orderItem);
+        orderItem.setOrder(this);
     }
 }
 
