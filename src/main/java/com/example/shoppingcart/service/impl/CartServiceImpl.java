@@ -1,109 +1,188 @@
 package com.example.shoppingcart.service.impl;
 
-import com.example.shoppingcart.entity.Cart;
-import com.example.shoppingcart.entity.Customer;
-import com.example.shoppingcart.entity.Product;
-import com.example.shoppingcart.repository.CartRepository;
+import com.example.shoppingcart.entity.*;
+import com.example.shoppingcart.repository.*;
 import com.example.shoppingcart.response.CartResponseDTO;
 import com.example.shoppingcart.service.CartService;
+import jakarta.transaction.Transactional;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class CartServiceImpl implements CartService {
     
     @Autowired
     private CartRepository cartRepository;
+    @Autowired
+    private ProductRepository productRepository;
     
+    // Sepet ID'sine göre sepeti getir
     @Override
     public Optional<CartResponseDTO> getCartById(String id) {
         Optional<Cart> optionalCart = cartRepository.findById(id);
         if (optionalCart.isPresent()) {
             Cart cart = optionalCart.get();
-            return Optional.of(new CartResponseDTO(cart.getProducts(), cart.getTotalPrice()));
+            List<CartResponseDTO.CartItemDTO> cartItems = cart.getCartItems().stream()
+                    .map(cartItem -> new CartResponseDTO.CartItemDTO(cartItem))
+                    .collect(Collectors.toList());
+            return Optional.of(new CartResponseDTO(cartItems, cart.getTotalPrice()));
         } else {
-            throw new IllegalArgumentException("Cart not found with ID: " + id);
+            throw new IllegalArgumentException("Bu ID ile sepet bulunamadı: " + id);
         }
     }
     
+    // Sepeti boşalt
+    @Override
+    public void emptyCart(String cartId) {
+        Optional<Cart> optionalCart = cartRepository.findById(cartId);
+        if (optionalCart.isPresent()) {
+            Cart cart = optionalCart.get();
+            cart.getCartItems().clear();
+            cart.setTotalPrice(0.0);
+            cartRepository.save(cart);
+        } else {
+            throw new IllegalArgumentException("Bu ID ile sepet bulunamadı: " + cartId);
+        }
+    }
+    
+    // Müşteriye ait sepeti getir
     @Override
     public CartResponseDTO getCartByCustomer(Customer customer) {
         Cart cart = cartRepository.findByCustomer(customer);
-        if (cart == null) {
-            throw new IllegalArgumentException("Cart not found for the customer: " + customer.getId());
+        if (cart != null) {
+            List<CartResponseDTO.CartItemDTO> cartItems = cart.getCartItems().stream()
+                    .map(cartItem -> new CartResponseDTO.CartItemDTO(cartItem))
+                    .collect(Collectors.toList());
+            return new CartResponseDTO(cartItems, cart.getTotalPrice());
+        } else {
+            throw new IllegalArgumentException("Bu müşteri için sepet bulunamadı: " + customer.getId());
         }
-        return new CartResponseDTO(cart.getProducts(), cart.getTotalPrice());
     }
     
+    // Sepeti güncelle
     @Override
-    public CartResponseDTO updateCart(String id, List<Product> products) {
+    @Transactional
+    public CartResponseDTO updateCart(String id, List<CartItem> cartItems) {
         Optional<Cart> optionalCart = cartRepository.findById(id);
         if (optionalCart.isPresent()) {
             Cart cart = optionalCart.get();
-            cart.setProducts(products);
-            cartRepository.save(cart);
-            return new CartResponseDTO(cart.getProducts(), cart.getTotalPrice());
-        } else {
-            throw new IllegalArgumentException("Cart not found with ID: " + id);
-        }
-    }
-    
-    @Override
-    public void emptyCart(String id) {
-        Optional<Cart> optionalCart = cartRepository.findById(id);
-        if (optionalCart.isPresent()) {
-            Cart cart = optionalCart.get();
-            cart.getProducts().clear();
-            cart.setTotalPrice(0);
-            cartRepository.save(cart);
-        } else {
-            throw new IllegalArgumentException("Cart not found with ID: " + id);
-        }
-    }
-    
-    @Override
-    public CartResponseDTO addProductToCart(String cartId, Product product) {
-        Optional<Cart> optionalCart = cartRepository.findById(cartId);
-        if (optionalCart.isPresent()) {
-            Cart cart = optionalCart.get();
+            cart.getCartItems().clear();
             
-            cart.getProducts().add(product);
-            
-            double updatedTotalPrice = cart.getTotalPrice() + product.getPrice();
-            cart.setTotalPrice(updatedTotalPrice);
-            
-            cartRepository.save(cart);
-            
-            return new CartResponseDTO(cart.getProducts(), cart.getTotalPrice());
-        } else {
-            throw new IllegalArgumentException("Cart not found with ID: " + cartId);
-        }
-    }
-    
-    @Override
-    public CartResponseDTO removeProductFromCart(String cartId, Product product) {
-        Optional<Cart> optionalCart = cartRepository.findById(cartId);
-        if (optionalCart.isPresent()) {
-            Cart cart = optionalCart.get();
-            
-            if (cart.getProducts().contains(product)) {
-                cart.getProducts().remove(product);
+            for (CartItem cartItem : cartItems) {
+                Product product = productRepository.findById(cartItem.getProduct().getId())
+                        .orElseThrow(() -> new IllegalArgumentException("Bu ID ile ürün bulunamadı: " + cartItem.getProduct().getId()));
                 
-                double updatedTotalPrice = cart.getTotalPrice() - product.getPrice();
-                cart.setTotalPrice(updatedTotalPrice);
+                if (product.getStock() < cartItem.getQuantity()) {
+                    throw new IllegalArgumentException("Ürün: " + product.getName() + " için yeterli stok yok. Mevcut stok: " + product.getStock());
+                }
                 
-                cartRepository.save(cart);
-                
-                return new CartResponseDTO(cart.getProducts(), cart.getTotalPrice());
-            } else {
-                throw new IllegalArgumentException("Product not found in cart with ID: " + cartId);
+                cartItem.setCart(cart);
+                cart.getCartItems().add(cartItem);
             }
+            
+            updateTotalPrice(cart);
+            cartRepository.save(cart);
+            
+            List<CartResponseDTO.CartItemDTO> updatedCartItems = cart.getCartItems().stream()
+                    .map(cartItem -> new CartResponseDTO.CartItemDTO(cartItem))
+                    .collect(Collectors.toList());
+            
+            return new CartResponseDTO(updatedCartItems, cart.getTotalPrice());
         } else {
-            throw new IllegalArgumentException("Cart not found with ID: " + cartId);
+            throw new IllegalArgumentException("Bu ID ile sepet bulunamadı: " + id);
         }
+    }
+    
+    // Sepete ürün ekle
+    @Override
+    public CartResponseDTO addProductToCart(String cartId, CartItem cartItem) {
+        Optional<Cart> optionalCart = cartRepository.findById(cartId);
+        
+        if (optionalCart.isPresent()) {
+            Cart cart = optionalCart.get();
+            Product product = productRepository.findById(cartItem.getProduct().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Bu ID ile ürün bulunamadı: " + cartItem.getProduct().getId()));
+            log.info("Sepete ürün ekleniyor: " + product.getName());
+            
+            if (cartItem.getQuantity() > product.getStock()) {
+                throw new IllegalArgumentException("Sepetteki miktar stok miktarını aşıyor. Stok miktarı: " + product.getStock());
+            }
+            
+            CartItem existingCartItem = cart.getCartItems().stream()
+                    .filter(item -> item.getProduct().getId().equals(product.getId()))
+                    .findFirst()
+                    .orElse(null);
+            
+            if (existingCartItem != null) {
+                int newQuantity = existingCartItem.getQuantity() + cartItem.getQuantity();
+                
+                if (newQuantity > product.getStock()) {
+                    throw new IllegalArgumentException("Sepetteki toplam miktar stok miktarını aşıyor. Stok miktarı: " + product.getStock());
+                }
+                
+                existingCartItem.setQuantity(newQuantity);
+            } else {
+                cartItem.setCart(cart);
+                cart.getCartItems().add(cartItem);
+            }
+            
+            updateTotalPrice(cart);
+            cartRepository.save(cart);
+            
+            List<CartResponseDTO.CartItemDTO> updatedCartItems = cart.getCartItems().stream()
+                    .map(cartItem1 -> new CartResponseDTO.CartItemDTO(cartItem1))
+                    .collect(Collectors.toList());
+            
+            return new CartResponseDTO(updatedCartItems, cart.getTotalPrice());
+        } else {
+            throw new IllegalArgumentException("Bu ID ile sepet bulunamadı: " + cartId);
+        }
+    }
+    
+    // Sepetten ürün çıkar
+    @Override
+    public CartResponseDTO removeProductFromCart(String cartId, CartItem cartItem) {
+        Optional<Cart> optionalCart = cartRepository.findById(cartId);
+        if (optionalCart.isPresent()) {
+            Cart cart = optionalCart.get();
+            Product product = productRepository.findById(cartItem.getProduct().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Bu ID ile ürün bulunamadı: " + cartItem.getProduct().getId()));
+            
+            CartItem existingCartItem = cart.getCartItems().stream()
+                    .filter(item -> item.getProduct().equals(product))
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalArgumentException("Sepette bu ID ile ürün bulunamadı: " + cartId));
+            
+            cart.getCartItems().remove(existingCartItem);
+            updateTotalPrice(cart);
+            cartRepository.save(cart);
+            
+            List<CartResponseDTO.CartItemDTO> updatedCartItems = cart.getCartItems().stream()
+                    .map(cartItem1 -> new CartResponseDTO.CartItemDTO(cartItem1))
+                    .collect(Collectors.toList());
+            
+            return new CartResponseDTO(updatedCartItems, cart.getTotalPrice());
+        } else {
+            throw new IllegalArgumentException("Bu ID ile sepet bulunamadı: " + cartId);
+        }
+    }
+    
+    // Toplam fiyatı güncelle
+    private void updateTotalPrice(Cart cart) {
+        double total = 0.0;
+        
+        for (CartItem cartItem : cart.getCartItems()) {
+            Product product = productRepository.findById(cartItem.getProduct().getId())
+                    .orElseThrow(() -> new IllegalArgumentException("Bu ID ile ürün bulunamadı: " + cartItem.getProduct().getId()));
+            
+            total += cartItem.getQuantity() * product.getPrice();
+        }
+        
+        cart.setTotalPrice(total);
     }
 }
-

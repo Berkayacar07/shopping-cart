@@ -3,6 +3,7 @@ package com.example.shoppingcart.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+
 import java.util.*;
 
 @Entity
@@ -17,13 +18,8 @@ public class Cart extends BaseEntity {
     @OneToOne
     private Customer customer;
     
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(
-            name = "cart_products",
-            joinColumns = @JoinColumn(name = "cart_id"),
-            inverseJoinColumns = @JoinColumn(name = "product_id")
-    )
-    private List<Product> products = new ArrayList<>();
+    @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<CartItem> cartItems = new ArrayList<>();
     
     private double totalPrice;
 }

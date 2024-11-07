@@ -1,6 +1,7 @@
 package com.example.shoppingcart.controller;
 
-import com.example.shoppingcart.entity.*;
+import com.example.shoppingcart.entity.CartItem;
+import com.example.shoppingcart.entity.Customer;
 import com.example.shoppingcart.response.CartResponseDTO;
 import com.example.shoppingcart.service.CartService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,8 @@ public class CartController {
     
     @GetMapping("/{id}")
     public CartResponseDTO getCartById(@PathVariable String id) {
-        return cartService.getCartById(id).orElseThrow(() -> new IllegalArgumentException("Cart not found"));
+        return cartService.getCartById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Cart not found"));
     }
     
     @GetMapping("/customer/{customerId}")
@@ -28,8 +30,8 @@ public class CartController {
     }
     
     @PutMapping("/{id}")
-    public CartResponseDTO updateCart(@PathVariable String id, @RequestBody List<Product> products) {
-        return cartService.updateCart(id, products);
+    public CartResponseDTO updateCart(@PathVariable String id, @RequestBody List<CartItem> cartItems) {
+        return cartService.updateCart(id, cartItems);
     }
     
     @DeleteMapping("/{id}/empty")
@@ -38,12 +40,12 @@ public class CartController {
     }
     
     @PostMapping("/{cartId}/addProduct")
-    public CartResponseDTO addProductToCart(@PathVariable String cartId, @RequestBody Product product) {
-        return cartService.addProductToCart(cartId, product);
+    public CartResponseDTO addProductToCart(@PathVariable String cartId, @RequestBody CartItem cartItem) {
+        return cartService.addProductToCart(cartId, cartItem);
     }
     
     @DeleteMapping("/{cartId}/removeProduct")
-    public CartResponseDTO removeProductFromCart(@PathVariable String cartId, @RequestBody Product product) {
-        return cartService.removeProductFromCart(cartId, product);
+    public CartResponseDTO removeProductFromCart(@PathVariable String cartId, @RequestBody CartItem cartItem) {
+        return cartService.removeProductFromCart(cartId, cartItem);
     }
 }
