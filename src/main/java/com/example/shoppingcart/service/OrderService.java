@@ -1,13 +1,15 @@
 package com.example.shoppingcart.service;
 
-import java.util.List;
+import java.util.*;
 import com.example.shoppingcart.entity.Order;
 import com.example.shoppingcart.response.OrderResponse;
 
 public interface OrderService {
     OrderResponse placeOrder(String customerId);
-    Order getOrderById(String id);
-    List<Order> getAllOrdersForCustomer(String customerId);
-    List<Order> getAllOrders();
+    OrderResponse getOrderById(String id);
+    List<OrderResponse> getAllOrdersForCustomer(String customerId);
+    List<OrderResponse> getAllOrders();
+    OrderResponse findByCode(String code);
+    
 }
 

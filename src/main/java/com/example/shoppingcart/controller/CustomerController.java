@@ -1,6 +1,7 @@
 package com.example.shoppingcart.controller;
 
 import com.example.shoppingcart.entity.Customer;
+import com.example.shoppingcart.response.CustomerResponse;
 import com.example.shoppingcart.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -16,22 +17,22 @@ public class CustomerController {
     private CustomerService customerService;
     
     @PostMapping
-    public Customer createCustomer(@RequestBody Customer customer) {
-        return customerService.createCustomer(customer);
+    public CustomerResponse createCustomer(@RequestBody Customer customer) {
+        return customerService.addCustomer(customer);
     }
     
     @GetMapping("/{id}")
-    public Optional<Customer> getCustomerById(@PathVariable String id) {
+    public Optional<CustomerResponse> getCustomerById(@PathVariable String id) {
         return customerService.getCustomerById(id);
     }
     
     @GetMapping
-    public List<Customer> getAllCustomers() {
+    public List<CustomerResponse> getAllCustomers() {
         return customerService.getAllCustomers();
     }
     
     @PutMapping("/{id}")
-    public Customer updateCustomer(@PathVariable String id, @RequestBody Customer customer) {
+    public CustomerResponse updateCustomer(@PathVariable String id, @RequestBody Customer customer) {
         return customerService.updateCustomer(id, customer);
     }
     

@@ -2,12 +2,14 @@ package com.example.shoppingcart.service.impl;
 
 import com.example.shoppingcart.entity.*;
 import com.example.shoppingcart.repository.CustomerRepository;
+import com.example.shoppingcart.response.CustomerResponse;
 import com.example.shoppingcart.service.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -16,7 +18,7 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerRepository customerRepository;
     
     @Override
-    public Customer createCustomer(Customer customer) {
+    public CustomerResponse addCustomer(Customer customer) {
         Cart cart = Cart.builder()
                 .customer(customer)
                 .totalPrice(0.0)
@@ -24,23 +26,40 @@ public class CustomerServiceImpl implements CustomerService {
         
         customer.setCart(cart);
         
-        return customerRepository.save(customer);
+        return convertToCustomerResponse(customerRepository.save(customer));
+    }
+    
+    private CustomerResponse convertToCustomerResponse(Customer customer) {
+        return CustomerResponse.builder()
+                .id(customer.getId())
+                .name(customer.getName())
+                .email(customer.getEmail())
+                .address(customer.getAddress())
+                .enabled(customer.isEnabled())
+                .build();
     }
     
     @Override
-    public Optional<Customer> getCustomerById(String id) {
-        return customerRepository.findById(id);
+    public Optional<CustomerResponse> getCustomerById(String id) {
+        Optional<Customer> customer = customerRepository.findById(id);
+        
+        return customer.map(this::convertToCustomerResponse);
+    }
+    
+    
+    @Override
+    public List<CustomerResponse> getAllCustomers() {
+        List<Customer> customers = customerRepository.findAll();
+        
+        return customers.stream()
+                .map(this::convertToCustomerResponse)
+                .collect(Collectors.toList());
     }
     
     @Override
-    public List<Customer> getAllCustomers() {
-        return customerRepository.findAll();
-    }
-    
-    @Override
-    public Customer updateCustomer(String id, Customer customer) {
+    public CustomerResponse updateCustomer(String id, Customer customer) {
         customer.setId(id);
-        return customerRepository.save(customer);
+        return convertToCustomerResponse(customerRepository.save(customer));
     }
     
     @Override

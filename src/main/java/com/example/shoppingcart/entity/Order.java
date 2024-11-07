@@ -24,6 +24,9 @@ public class Order extends BaseEntity {
     
     private double totalPrice;
     
+    @Column(nullable = false, unique = true)
+    private String code;
+    
     public void addOrderItem(OrderItem orderItem) {
         this.orderItems.add(orderItem);
         orderItem.setOrder(this);

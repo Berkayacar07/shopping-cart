@@ -11,5 +11,6 @@ public class OrderItemResponse {
     private String productId;
     private int quantity;
     private double price;
+    private String code;
     
 }

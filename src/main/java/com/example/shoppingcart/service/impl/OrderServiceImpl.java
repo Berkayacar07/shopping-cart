@@ -52,6 +52,7 @@ public class OrderServiceImpl implements OrderService {
                     productId(item.getProduct().getId()).
                     quantity(item.getQuantity()).
                     price(item.getPrice()).
+                    code(order.getCode()).
                     build();
 
             return itemDTO;
@@ -66,11 +67,14 @@ public class OrderServiceImpl implements OrderService {
         Customer customer = customerRepository.findById(customerId).orElseThrow(() ->
                 new IllegalArgumentException("Müşteri bulunamadı: " + customerId));
         Cart cart = customer.getCart();
-
+        
+        String orderCode = System.currentTimeMillis() + "-" + (int) (Math.random() * 10000);
+        
         Order order = Order.builder().
                 customer(customer).
                 totalPrice(cart.getTotalPrice()).
-                build();
+                code(orderCode).
+                        build();
         
         for (CartItem cartItem : cart.getCartItems()) {
             Product product = productRepository.findById(cartItem.getProduct().getId())
@@ -87,7 +91,7 @@ public class OrderServiceImpl implements OrderService {
                     quantity(cartItem.getQuantity()).
                     price(product.getPrice()).
                     build();
-
+            
             order.addOrderItem(orderItem);
             
             productRepository.save(product);
@@ -102,20 +106,37 @@ public class OrderServiceImpl implements OrderService {
     
     
     
+    
     @Override
-    public Order getOrderById(String id) {
+    public OrderResponse getOrderById(String id) {
         Optional<Order> order = orderRepository.findById(id);
-        return order.orElse(null);
+        return convertToOrderResponseDTO(order.orElseThrow(() -> new IllegalArgumentException("Sipariş bulunamadı: " + id)));
     }
     
     @Override
-    public List<Order> getAllOrdersForCustomer(String customerId) {
-        return orderRepository.findAllByCustomerId(customerId);
+    public List<OrderResponse> getAllOrdersForCustomer(String customerId) {
+        List<Order> orders = orderRepository.findAllByCustomerId(customerId);
+        
+        return orders.stream()
+                .map(this::convertToOrderResponseDTO)
+                .collect(Collectors.toList());
+    }
+    
+    
+    @Override
+    public List<OrderResponse> getAllOrders() {
+        List<Order> orders = orderRepository.findAll();
+        
+        return orders.stream()
+                .map(this::convertToOrderResponseDTO)
+                .collect(Collectors.toList());
     }
     
     @Override
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    public OrderResponse findByCode(String code) {
+        Optional<Order> order =  orderRepository.findByCode(code);
+        return convertToOrderResponseDTO(order.orElseThrow(() -> new IllegalArgumentException("Sipariş bulunamadı: " + code)));
     }
+    
 }
 

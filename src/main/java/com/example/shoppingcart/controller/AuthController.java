@@ -30,14 +30,14 @@ public class AuthController {
     }
     
     @PostMapping("/register")
-    public ApiResponse createCustomer(@Valid @RequestBody Customer customer) {
+    public ApiResponse addCustomer(@Valid @RequestBody Customer customer) {
         Customer existingCustomer = customerService.findByEmail(customer.getEmail());
         if (existingCustomer != null) {
             throw new BadCredentialsException(customer.getEmail() + " zaten kayıtlı");
         }
         
         customer.setPassword(passwordEncoder.encode(customer.getPassword()));
-        customerService.createCustomer(customer);
+        customerService.addCustomer(customer);
         
         return new ApiResponse("Kullanıcı başarıyla kaydedildi");
     }

@@ -23,6 +23,9 @@ public class Customer extends BaseEntity implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
     
+    @Column(nullable = false)
+    private String address;
+    
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     

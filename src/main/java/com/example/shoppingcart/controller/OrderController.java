@@ -1,6 +1,5 @@
 package com.example.shoppingcart.controller;
 
-import com.example.shoppingcart.entity.Order;
 import com.example.shoppingcart.request.OrderRequest;
 import com.example.shoppingcart.response.OrderResponse;
 import com.example.shoppingcart.service.OrderService;
@@ -22,17 +21,22 @@ public class OrderController {
     }
     
     @GetMapping("/{id}")
-    public Order getOrderById(@PathVariable String id) {
+    public OrderResponse getOrderById(@PathVariable String id) {
         return orderService.getOrderById(id);
     }
     
     @GetMapping("/customer/{customerId}")
-    public List<Order> getAllOrdersForCustomer(@PathVariable String customerId) {
+    public List<OrderResponse> getAllOrdersForCustomer(@PathVariable String customerId) {
         return orderService.getAllOrdersForCustomer(customerId);
     }
     
     @GetMapping
-    public List<Order> getAllOrders() {
+    public List<OrderResponse> getAllOrders() {
         return orderService.getAllOrders();
+    }
+    
+    @GetMapping("/code/{code}")
+    public OrderResponse findByCode(@PathVariable String code) {
+        return orderService.findByCode(code);
     }
 }
