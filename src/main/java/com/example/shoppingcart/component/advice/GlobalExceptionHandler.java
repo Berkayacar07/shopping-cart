@@ -7,8 +7,9 @@ import org.springframework.web.bind.annotation.*;
 import com.example.shoppingcart.response.CustomExceptionResponse;
 import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
+import org.postgresql.util.PSQLException;
 import java.nio.file.*;
-import java.util.Date;
+import java.util.*;
 
 @ControllerAdvice
 @Slf4j
@@ -41,13 +42,13 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
     
-    @ExceptionHandler(FileAlreadyExistsException.class)
-    public final ResponseEntity<CustomExceptionResponse> handleIllegalArgumentException() {
+    @ExceptionHandler(PSQLException.class)
+    public final ResponseEntity<CustomExceptionResponse> handlePSQLException(PSQLException ex) {
         CustomExceptionResponse errorResponse = new CustomExceptionResponse();
-        errorResponse.setMessage("File already exists");
+        errorResponse.setMessage(ex.getMessage());
         errorResponse.setTimestamp(new Date());
         
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
+        return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     
     @ExceptionHandler(UsernameNotFoundException.class)
