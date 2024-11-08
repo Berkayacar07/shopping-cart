@@ -39,6 +39,7 @@ public class OrderServiceImpl implements OrderService {
                 id(order.getCustomer().getId()).
                 name(order.getCustomer().getName()).
                 email(order.getCustomer().getEmail()).
+                address(order.getCustomer().getAddress()).
                 enabled(order.getCustomer().isEnabled()).
                 build();
 
