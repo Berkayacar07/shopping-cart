@@ -1,6 +1,7 @@
 package com.example.shoppingcart.service.impl;
 
 import com.example.shoppingcart.entity.*;
+import com.example.shoppingcart.exception.CustomerNotFoundException;
 import com.example.shoppingcart.repository.CustomerRepository;
 import com.example.shoppingcart.response.CustomerResponse;
 import com.example.shoppingcart.service.CustomerService;
@@ -25,6 +26,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .build();
         
         customer.setCart(cart);
+        customer.setEnabled(true);
         
         return convertToCustomerResponse(customerRepository.save(customer));
     }
@@ -64,8 +66,16 @@ public class CustomerServiceImpl implements CustomerService {
     
     @Override
     public void deleteCustomer(String id) {
-        customerRepository.deleteById(id);
+        Optional<Customer> customerOpt = customerRepository.findById(id);
+        if (customerOpt.isPresent()) {
+            Customer customer = customerOpt.get();
+            customer.setEnabled(false);
+            customerRepository.save(customer);
+        } else {
+            throw new CustomerNotFoundException("Bu id ile kullanıcı bulunamadı: " + id);
+        }
     }
+    
     
     @Override
     public Customer findByEmail(String email) {

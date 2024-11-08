@@ -37,6 +37,9 @@ public class Customer extends BaseEntity implements UserDetails {
     @JsonIgnore
     private List<Order> orders;
     
+    @JsonIgnore
+    private boolean enabled;
+    
     @Override
     @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -74,6 +77,6 @@ public class Customer extends BaseEntity implements UserDetails {
     
     @Override
     public boolean isEnabled() {
-        return true;
+        return enabled;
     }
 }

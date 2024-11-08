@@ -4,6 +4,7 @@ import org.springframework.http.*;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.*;
+import com.example.shoppingcart.exception.CustomerNotFoundException;
 import com.example.shoppingcart.response.CustomExceptionResponse;
 import jakarta.servlet.ServletException;
 import lombok.extern.slf4j.Slf4j;
@@ -76,5 +77,14 @@ public class GlobalExceptionHandler {
         errorResponse.setTimestamp(new Date());
         
         return new ResponseEntity<>(errorResponse, HttpStatus.FORBIDDEN);
+    }
+    
+    @ExceptionHandler(CustomerNotFoundException.class)
+    public final ResponseEntity<CustomExceptionResponse> handleCustomerNotFoundException(CustomerNotFoundException ex) {
+        CustomExceptionResponse errorResponse = new CustomExceptionResponse();
+        errorResponse.setMessage(ex.getMessage());
+        errorResponse.setTimestamp(new Date());
+        
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 }
